@@ -41,8 +41,6 @@ Configure the Payload decoder with:
 function decodeUplink(input) {
 	var bytes = input.bytes;
 	var decoded = {};
-	decoded.test= input.bytes;
-	
 
 	var latitude = ((bytes[0]<<16)>>>0) + ((bytes[1]<<8)>>>0) + bytes[2];
 	latitude = (latitude / 16777215.0 * 180) - 90;
