@@ -21,7 +21,7 @@ Adafruit_SSD1306 display(OLED_RESET);
 // Powermanagement chip AXP192
 AXP20X_Class axp;
 bool  axpIrq = 0;
-#define AXP192_SLAVE_ADDRESS 0x34
+//#define AXP192_SLAVE_ADDRESS 0x34
 const uint8_t axp_irq_pin = 35;
 
 String LoraStatus;
@@ -81,6 +81,7 @@ void do_send(osjob_t* j) {
   else
   { 
     if (gps.checkGpsFix())
+    //if (true)
     {
       // Prepare upstream data transmission at the next possible time.
       gps.buildPacket(txBuffer);
@@ -109,33 +110,15 @@ void sf_set() {
       LMIC_setDrTxpow(DR_SF9,17);
       sprintf(sd,"SF9-17");
     } else if (TX_Mode==3) {
-      LMIC_setDrTxpow(DR_SF10,17);
-      sprintf(sd,"SF10-17");
-    } else if (TX_Mode==4) {
-      LMIC_setDrTxpow(DR_SF11,17);
-      sprintf(sd,"SF11-17");
-    } else if (TX_Mode==5) {
-      LMIC_setDrTxpow(DR_SF12,17);
-      sprintf(sd,"SF12-17");
-    } else if (TX_Mode==6) {
       LMIC_setDrTxpow(DR_SF7,14);
       sprintf(sd,"SF7-14");
-    } else if (TX_Mode==7) {
+    } else if (TX_Mode==4) {
       LMIC_setDrTxpow(DR_SF8,14);
       sprintf(sd,"SF8-14");
-    } else if (TX_Mode==8) {
+    } else if (TX_Mode==5) {
       LMIC_setDrTxpow(DR_SF9,14);
       sprintf(sd,"SF9-14");
-    } else if (TX_Mode==9) {
-      LMIC_setDrTxpow(DR_SF10,14);
-      sprintf(sd,"SF10-14");
-    } else if (TX_Mode==10) {
-      LMIC_setDrTxpow(DR_SF11,14);
-      sprintf(sd,"SF11-14");
-    } else if (TX_Mode==11) {
-      LMIC_setDrTxpow(DR_SF12,14);
-      sprintf(sd,"SF12-14");
-    } 
+    }
 }
 
 
@@ -272,7 +255,7 @@ void sf_select() {
       if (selection == 0)
       {
         TX_Mode++;
-        if (TX_Mode >= 12){
+        if (TX_Mode >= 6){
           TX_Mode = 0;
         }
         sf_set();
@@ -330,6 +313,10 @@ void onEvent (ev_t ev) {
       Serial.println(F("EV_TXCOMPLETE (includes waiting for RX windows)"));
       LoraStatus = "EV_TXCOMPLETE";
       axp.setChgLEDMode(AXP20X_LED_OFF);  
+      // Store fcnt:
+      prefs.begin("nvs", false);
+      prefs.putUInt("fcnt", LMIC.seqnoUp);
+      prefs.end();
       if (LMIC.txrxFlags & TXRX_ACK) {
         Serial.println(F("Received Ack"));
         LoraStatus = "Received Ack";
@@ -465,11 +452,12 @@ void setup() {
   LMIC_reset();
  
   LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100);
+  LMIC.dn2Dr = DR_SF9;
   #ifndef OTAA 
   LMIC_setSession (0x1, DEVADDR, NWKSKEY, APPSKEY);
   #endif
 
-  #ifdef CFG_eu868
+  #ifdef CFG_eu868_
   LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
   LMIC_setupChannel(1, 868300000, DR_RANGE_MAP(DR_SF12, DR_SF7B), BAND_CENTI);      // g-band
   LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
@@ -490,6 +478,13 @@ void setup() {
         LMIC_disableChannel(i);
     }
   #endif
+
+    // Also fcnt:
+  prefs.begin("nvs", false);
+  LMIC.seqnoUp = prefs.getUInt("fcnt", 0);
+  prefs.end();
+  Serial.print("fcnt: ");
+  Serial.println(LMIC.seqnoUp);
 
   // Disable link check validation
   LMIC_setLinkCheckMode(0);
@@ -563,7 +558,7 @@ void loop() {
       display.print(VBAT,1);
       display.setCursor(122,0);
       // display charging-state
-      if (axp.isChargeing())
+      if (axp.isCharging())
       {
         display.print("V");
       } else {
@@ -625,7 +620,7 @@ void loop() {
       display.print(VBAT,1);
       display.setCursor(122,0);
       // display charging-state
-      if (axp.isChargeing())
+      if (axp.isCharging())
       {
         display.print("V");
       } else {
