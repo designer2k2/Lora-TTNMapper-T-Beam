@@ -370,8 +370,8 @@ void setup() {
   axp.adc1Enable(AXP202_VBUS_CUR_ADC1, true);
 
   // activate power rails
-  axp.setPowerOutPut(AXP192_LDO2, AXP202_ON);
-  axp.setPowerOutPut(AXP192_LDO3, AXP202_ON);
+  axp.setPowerOutPut(AXP192_LDO2, AXP202_ON); // LORA radio
+  axp.setPowerOutPut(AXP192_LDO3, AXP202_ON); // GPS main power
   axp.setPowerOutPut(AXP192_DCDC2, AXP202_ON);
   axp.setPowerOutPut(AXP192_EXTEN, AXP202_ON);
   axp.setPowerOutPut(AXP192_DCDC1, AXP202_ON);
