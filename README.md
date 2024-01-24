@@ -2,7 +2,7 @@
 
 This Fork from MichaelEFlip, forked from Bjoerns-TB, forked from DeuxVis.
 * Working in 2024 with TTN V3.
-* T-Beam 1.0 in 868MHZ (yes thats an old one).
+* T-Beam 1.0 in 868MHZ (yes that's an old one).
 * Only tested with Platformio in VScode.
 * supports OLED display on the I²C interface on GPIO22 and GPI21. This repo contains a patched SSD1306 library from [smartnick](https://github.com/smartinick/Adafruit_SSD1306), enabling individual I²C pins and to set I²C Clock to 800kHz. 
 
@@ -16,8 +16,8 @@ This is using a patched LMIC lib, i could not get it to work with others...
 ## New features
 
 * GPS scan relaxed and done more "nonblocking"
-* more informations shown on status screen
-* animated GPS-fix-screen with satelite gfx
+* more information shown on status screen
+* animated GPS-fix-screen with satellite gfx
 * selectable datarate and power (button short press)
 * selectable transmit interval (button longer press)
 * selectable ADR-Mode (button even longer press)
