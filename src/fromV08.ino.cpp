@@ -60,7 +60,7 @@ unsigned TX_INTERVAL = 15;
 unsigned long lastMillis = 0;
 unsigned long lastMillis2 = 0;
 
-// For battery mesurement
+// For battery measurement
 float VBAT;  // battery voltage from ESP32 ADC read
 
 const lmic_pinmap lmic_pins = {
