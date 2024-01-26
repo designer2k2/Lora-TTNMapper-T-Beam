@@ -1,11 +1,10 @@
-// Comment the next line to use ABP authentication on TTN. Leave it as it is to use recommended OTAA
+// Using ABP for now.
 //#define OTAA
 
 #ifndef LORA_TTNMAPPER_TBEAM_CONFIG_INCLUDED
 #define LORA_TTNMAPPER_TBEAM_CONFIG_INCLUDED
 
 #define CFG_eu868 1
-#define hal_init LMICHAL_init
 
 #ifndef OTAA
 // UPDATE WITH YOUR TTN KEYS AND ADDR.
@@ -15,9 +14,9 @@ static u1_t PROGMEM APPSKEY[16] = { 0xB0, 0xFB, 0x5B, 0xE7, 0x5C, 0x20, 0x6B, 0x
 static const u4_t DEVADDR = 0x260B08DB; // LoRaWAN end-device address (DevAddr)
 #else
 // Settings from OTAA device
-static const u1_t PROGMEM DEVEUI[8]={ 0x00, 0xEF, 0xFD, 0x03, 0x55, 0xA1, 0xE8, 0x42 } ; // Device EUI, hex, lsb
-static const u1_t PROGMEM APPEUI[8]={ 0x70, 0xB3, 0xD5, 0x7E, 0xD0, 0x02, 0xD8, 0x0B }; // Application EUI, hex, lsb
-static const u1_t PROGMEM APPKEY[16] = { 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11 }; // App Key, hex, msb
+static const u1_t PROGMEM DEVEUI[8]={ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } ; // Device EUI, hex, lsb
+static const u1_t PROGMEM APPEUI[8]={ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }; // Application EUI, hex, lsb
+static const u1_t PROGMEM APPKEY[16] = { 0x12, 0x23, 0x45, 0x67, 0x89, 0x01, 0x23, 0x45, 0x67, 0x89, 0x01, 0x23, 0x45, 0x67, 0x89, 0x01 }; // App Key, hex, msb
 
 void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}

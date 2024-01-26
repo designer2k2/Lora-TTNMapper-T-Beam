@@ -21,7 +21,6 @@ Adafruit_SSD1306 display(OLED_RESET);
 // Powermanagement chip AXP192
 AXP20X_Class axp;
 bool axpIrq = false;
-//#define AXP192_SLAVE_ADDRESS 0x34
 const uint8_t axp_irq_pin = 35;
 
 String LoraStatus;
@@ -140,8 +139,8 @@ void iv_set() {
     TX_INTERVAL = 1800;
     sprintf(iv, "30m");
   } else if (TX_Interval_Mode == 7) {
-    TX_INTERVAL = 3600;
-    sprintf(iv, "60m");
+    TX_INTERVAL = 8;
+    sprintf(iv, "8s");
   }
 }
 
@@ -176,19 +175,9 @@ void sf_select() {
         delay(20);
         selection = 1;
       }
-      if (((os_getTime() - startTime) >= sec2osticks(4)) && (os_getTime() - startTime) <= sec2osticks(6))  // ADR = BUTTON PRESS FOR MIN. 4 / MAX 6 SEC.
+      if (((os_getTime() - startTime) >= sec2osticks(4)) && (os_getTime() - startTime) <= sec2osticks(6))  // BUTTON PRESS FOR MIN. 4 / MAX 6 SEC.
       {
-        display.clearDisplay();
-        display.setTextColor(WHITE);
-        display.setTextSize(2);
-        display.setCursor(8, 32);
-        if (adr == 0) {
-          display.print("ADR -> ON");
-        } else {
-          display.print("ADR -> OFF");
-        }
-        display.display();
-        delay(20);
+        // unused
         selection = 2;
       }
       if (((os_getTime() - startTime) > sec2osticks(6)) && (os_getTime() - startTime) <= sec2osticks(8))  // PORT-CHANGE = BUTTON PRESS FOR MIN. 6 / MAX 8 SEC.
@@ -223,14 +212,9 @@ void sf_select() {
       prefs.putString("IV_MODE", String(TX_Interval_Mode));
       prefs.end();
     }
-    if (selection == 2)  // ADR
+    if (selection == 2)  // Unused
     {
-      adr = 1 - adr;
-      prefs.begin("nvs", false);
-      prefs.putString("ADR", String(adr));
-      prefs.end();
-      LMIC_setAdrMode(adr);
-      sf_set();
+
     }
     if (selection == 3)  // Change Port
     {
@@ -436,7 +420,7 @@ void setup() {
   LMIC_setSession(0x1, DEVADDR, NWKSKEY, APPSKEY);
 #endif
 
-#ifdef CFG_eu868_
+#ifdef CFG_eu868
   LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF7), BAND_CENTI);   // g-band
   LMIC_setupChannel(1, 868300000, DR_RANGE_MAP(DR_SF12, DR_SF7B), BAND_CENTI);  // g-band
   LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF12, DR_SF7), BAND_CENTI);   // g-band
@@ -467,9 +451,9 @@ void setup() {
 
   // Disable link check validation
   LMIC_setLinkCheckMode(0);
-  // Disable/Enable ADR
-  LMIC_setAdrMode(adr);
-  // ??? TTN uses SF9 for its RX2 window.
+  // Disable ADR
+  LMIC_setAdrMode(false);
+  // TTN uses SF9 for its RX2 window.
   LMIC.dn2Dr = DR_SF9;
 
   // Set data rate and transmit power for uplink (note: txpow seems to be ignored by the library)

@@ -11,8 +11,6 @@ This is a simple sketch demonstrating the capability of the [TTGO T-Beam](https:
 Derived from [sbiermann/Lora-TTNMapper-ESP32](https://github.com/sbiermann/Lora-TTNMapper-ESP32) and with some information/inspiration from [cyberman54/ESP32-Paxcounter](https://github.com/cyberman54/ESP32-Paxcounter) and [Edzelf/LoRa](https://github.com/Edzelf/LoRa).
 The forked repo from hottimuc was converted to a PlatformIO project (currently for hardware revision >= 0.8).
 
-This is using a patched LMIC lib, i could not get it to work with others...
-
 ## New features
 
 * GPS scan relaxed and done more "nonblocking"
@@ -20,11 +18,10 @@ This is using a patched LMIC lib, i could not get it to work with others...
 * animated GPS-fix-screen with satellite gfx
 * selectable datarate and power (button short press)
 * selectable transmit interval (button longer press)
-* selectable ADR-Mode (button even longer press)
 * selectable send-port to enable "on device" switch to experimental mapping (button even loooonger press)
 * support for newer HW-revisions (V08 / V0.8, V09 / V0.9, V10 / V1.0, with soft-power-button and powermanagement chip) (short press = power-on / dimm-mode; long press = power-off)
 
-![Start screen](images/sc_02.jpg)![GPS fix screen](images/sc_01.jpg)![Status screen](images/sc_03.jpg) 
+![GPS fix screen](images/sc_01.jpg)![Status screen](images/sc_03.jpg) 
 
 ## Software dependencies
 
@@ -34,7 +31,7 @@ This is using a patched LMIC lib, i could not get it to work with others...
 
 ## Instructions
 
-Copy all from here locally, open it with PlatformIO, modify the config.h with your credentials and upload.
+Copy all from here locally, open it with PlatformIO, modify the config.h with your ABP credentials and upload.
 
 On The Things Network side, the settings needed are available [here](https://www.thethingsnetwork.org/docs/applications/ttnmapper/).
 
