@@ -33,7 +33,7 @@ The forked repo from hottimuc was converted to a PlatformIO project (currently f
 
 ## Instructions
 
-Copy all from here locally, open it with PlatformIO, modify the config.h with your ABP credentials and upload.
+Copy all from here locally, open it with PlatformIO, rename **config.h.template** to **config.h** and fill with your ABP credentials. Then upload it to the T-Beam.
 
 On The Things Network side, the settings needed are available [here](https://www.thethingsnetwork.org/docs/applications/ttnmapper/).
 
