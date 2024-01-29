@@ -494,11 +494,12 @@ void loop() {
 
   gps.encode();
   sf_select();
+  os_runloop_once();
+
   if (lastMillis + 1000 < millis()) {
     lastMillis = millis();
     VBAT = axp.getBattVoltage() / 1000;
 
-    os_runloop_once();
     if (gps.checkGpsFix()) {
       GPSonceFixed = true;
       noFix = false;
