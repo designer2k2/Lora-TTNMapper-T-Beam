@@ -94,7 +94,7 @@ void do_send(osjob_t* j) {
     Serial.println(F("OP_TXRXPEND, not sending"));
     LoraStatus = "OP_TXRXPEND, not sending";
   } else {
-    if (gps.checkGpsFix() && ((dist_moved > min_dist_moved) || (millis() > (last_send_ms + STATIONARY_TX_INTERVAL)))) {
+    if (gps.checkGpsFix() && ((dist_moved > min_dist_moved) || (millis() > (last_send_ms + STATIONARY_TX_INTERVAL * 1000)))) {
       // Prepare upstream data transmission at the next possible time.
       gps.buildPacket(txBuffer);
       last_send_lat = gps.tGps.location.lat();
@@ -620,6 +620,8 @@ void loop() {
       } else {
         display.print("v");
       }
+      display.setCursor(0, 0);
+      display.print("SAT: " + String(gps.tGps.satellites.value()));
     }
     redraw = true;
   }

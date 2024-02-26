@@ -4,7 +4,7 @@ HardwareSerial GPSSerial(1);
 
 void gps::init() {
   GPSSerial.setRxBufferSize(2048);  // Default is 256
-  GPSSerial.begin(9600, SERIAL_8N1, GPS_TX, GPS_RX);
+  GPSSerial.begin(115200, SERIAL_8N1, GPS_TX, GPS_RX);
   GPSSerial.setTimeout(2);
 
   // CFG-PRT to 115200 Baudrate
@@ -42,12 +42,12 @@ void gps::init() {
 
   for (byte i = 0; i < sizeof(packet); i++)
   {
-    GPSSerial.write(packet[i]);
+    //GPSSerial.write(packet[i]);
   }
 
-  delay(100);
-  GPSSerial.flush();
-  GPSSerial.updateBaudRate(115200);
+  //delay(100);
+  //GPSSerial.flush();
+  //GPSSerial.updateBaudRate(115200);
 }
 
 void gps::encode() {
@@ -104,7 +104,11 @@ bool gps::checkGpsFix() {
     Serial.println("Valid gps Fix.");
     return true;
   } else {
-    Serial.println("No gps Fix.");
+    Serial.print("No gps Fix. ");
+    Serial.print(tGps.failedChecksum());
+    Serial.print(" Failed Checksums, ");
+    Serial.print(tGps.charsProcessed());
+    Serial.println(" Chars Ok");
     return false;
   }
 }
