@@ -5,6 +5,9 @@
 * Working in 2024 with TTN V3.
 * T-Beam 1.0 in 868MHZ (yes that's an old one).
 * Only tested with Platformio in VScode.
+* GPS set to 115k baud (must be done with u-center or so).
+* TX window, only send if moved at least a configurable distance.
+* Auto power off if battery is below a configurable voltage.
 * supports OLED display on the I²C interface on GPIO22 and GPI21. This repo contains a patched SSD1306 library from [smartnick](https://github.com/smartinick/Adafruit_SSD1306), enabling individual I²C pins and to set I²C Clock to 800kHz. 
 
 
