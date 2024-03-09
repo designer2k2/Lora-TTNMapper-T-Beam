@@ -12,7 +12,7 @@
 #include "Adafruit_GFX.h"
 #include "Adafruit_SSD1306.h"
 
-#define MIN_DIST 10.0                    // Minimum distance in meters from the last sent location before we send again.
+#define MIN_DIST 20.0                    // Minimum distance in meters from the last sent location before we send again.
 #define STATIONARY_TX_INTERVAL (1 * 60)  // Send one uplink at least once every N seconds
 
 // Below BATTERY_LOW_VOLTAGE, power off until USB power allows charging.
@@ -564,7 +564,7 @@ void loop() {
       display.setCursor(0, 10);
       display.print("Speed: " + String(txBuffer2[1]) + " km/h");
       display.setCursor(0, 20);
-      display.print("Dist: " + String(dist_moved) + "m");
+      display.print("Dist: " + String(dist_moved,0) + "m");
       display.setCursor(0, 30);
       display.print("Alt: " + String(txBuffer2[3]) + "m");
       display.setCursor(0, 40);
