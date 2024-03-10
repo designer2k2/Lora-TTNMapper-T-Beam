@@ -12,6 +12,18 @@
 #include "Adafruit_GFX.h"
 #include "Adafruit_SSD1306.h"
 
+#define MIN_DIST 20.0                    // Minimum distance in meters from the last sent location before we send again.
+#define STATIONARY_TX_INTERVAL (1 * 60)  // Send one uplink at least once every N seconds
+
+// Below BATTERY_LOW_VOLTAGE, power off until USB power allows charging.
+// The PMIC also has a (safety) turn-off at 2.6v, much lower than this setting.
+// We use a conservative cutoff here since the battery will last longer if it's not repeatedly run to minimum.
+// A new-condition 18650 cell gives around 9Wh (Molicell) when discharged to the absolute lowest 2.5v
+// 8110mWh to 3.3v
+// 8875mWh to 3.1v
+// 9210mWh to 2.5v
+#define BATTERY_LOW_VOLTAGE 3.3
+
 // T-Beam specific hardware
 #define SELECT_BTN 38
 
@@ -43,6 +55,12 @@ uint8_t txBuffer[9];
 uint16_t txBuffer2[5];
 gps gps;
 Preferences prefs;
+
+float min_dist_moved = MIN_DIST;
+double last_send_lat = 0;            // Last known location
+double last_send_lon = 0;            //
+double dist_moved = 0;               // Distance in m from last uplink
+unsigned long int last_send_ms = 0;  // Time of last uplink
 
 #ifndef OTAA
 // These callbacks are only used in over-the-air activation, so they are
@@ -76,18 +94,19 @@ void do_send(osjob_t* j) {
     Serial.println(F("OP_TXRXPEND, not sending"));
     LoraStatus = "OP_TXRXPEND, not sending";
   } else {
-    if (gps.checkGpsFix())
-    //if (true)
-    {
+    if (gps.checkGpsFix() && ((dist_moved > min_dist_moved) || (millis() > (last_send_ms + STATIONARY_TX_INTERVAL * 1000)))) {
       // Prepare upstream data transmission at the next possible time.
       gps.buildPacket(txBuffer);
+      last_send_lat = gps.tGps.location.lat();
+      last_send_lon = gps.tGps.location.lng();
+      last_send_ms = millis();
       LMIC_setTxData2(port, txBuffer, sizeof(txBuffer), 0);
       Serial.println(F("Packet queued"));
       axp.setChgLEDMode(ledMode);
       LoraStatus = "Packet queued";
     } else {
-      //try again in 3 seconds
-      os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(3), do_send);
+      //try again in 2 seconds
+      os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(2), do_send);
     }
   }
   // Next TX is scheduled after TX_COMPLETE event.
@@ -214,7 +233,6 @@ void sf_select() {
     }
     if (selection == 2)  // Unused
     {
-
     }
     if (selection == 3)  // Change Port
     {
@@ -332,6 +350,13 @@ void onEvent(ev_t ev) {
 }
 
 
+// Power OFF -- does not return
+void clean_shutdown(void) {
+  LMIC_shutdown();                    // cleanly shutdown the radio
+  axp.setChgLEDMode(AXP20X_LED_OFF);  // Surprisingly sticky if you don't set it
+  axp.shutdown();                     // PMIC power off
+}
+
 
 void setup() {
   Serial.begin(115200);
@@ -354,14 +379,15 @@ void setup() {
   axp.adc1Enable(AXP202_VBUS_CUR_ADC1, true);
 
   // activate power rails
-  axp.setPowerOutPut(AXP192_LDO2, AXP202_ON); // LORA radio
-  axp.setPowerOutPut(AXP192_LDO3, AXP202_ON); // GPS main power
+  axp.setPowerOutPut(AXP192_LDO2, AXP202_ON);  // LORA radio
+  axp.setPowerOutPut(AXP192_LDO3, AXP202_ON);  // GPS main power
   axp.setPowerOutPut(AXP192_DCDC2, AXP202_ON);
   axp.setPowerOutPut(AXP192_EXTEN, AXP202_ON);
   axp.setPowerOutPut(AXP192_DCDC1, AXP202_ON);
 
   // enable only the short press IRQ
   axp.enableIRQ(AXP202_PEK_SHORTPRESS_IRQ, true);
+  axp.enableIRQ(AXP202_PEK_LONGPRESS_IRQ, true);
   axp.clearIRQ();
 
   // read preferences
@@ -489,18 +515,35 @@ void loop() {
         ledMode = AXP20X_LED_OFF;
       }
     }
+    if (axp.isPEKLongtPressIRQ()) {  
+      // want to turn OFF
+      clean_shutdown();
+    }
     axp.clearIRQ();
   }
 
   gps.encode();
   sf_select();
+  os_runloop_once();
+
   if (lastMillis + 1000 < millis()) {
     lastMillis = millis();
     VBAT = axp.getBattVoltage() / 1000;
 
-    os_runloop_once();
+    float charge_ma = axp.getBattChargeCurrent();
+
+    if (axp.isBatteryConnect() && VBAT < BATTERY_LOW_VOLTAGE && charge_ma < 99.0) {
+      Serial.println("Low Battery OFF");
+      clean_shutdown();
+    }
+
+
     if (gps.checkGpsFix()) {
       GPSonceFixed = true;
+
+      // distance from last transmitted location
+      dist_moved = gps.tGps.distanceBetween(last_send_lat, last_send_lon, gps.tGps.location.lat(), gps.tGps.location.lng());
+
       noFix = false;
       gps.gdisplay(txBuffer2);
       float hdop = txBuffer2[4] / 10.0;
@@ -521,7 +564,7 @@ void loop() {
       display.setCursor(0, 10);
       display.print("Speed: " + String(txBuffer2[1]) + " km/h");
       display.setCursor(0, 20);
-      display.print("Course: " + String(txBuffer2[2]) + (char)247);
+      display.print("Dist: " + String(dist_moved,0) + "m");
       display.setCursor(0, 30);
       display.print("Alt: " + String(txBuffer2[3]) + "m");
       display.setCursor(0, 40);
@@ -577,6 +620,8 @@ void loop() {
       } else {
         display.print("v");
       }
+      display.setCursor(0, 0);
+      display.print("SAT: " + String(gps.tGps.satellites.value()));
     }
     redraw = true;
   }

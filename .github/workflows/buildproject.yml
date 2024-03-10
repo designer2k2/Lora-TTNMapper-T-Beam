@@ -13,6 +13,10 @@ jobs:
           python-version: '3.10'
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
+        
+      - name: Copy the config template
+        run: |
+          cp "./src/config.h.template" "./src/config.h"
 
       - name: Build PlatformIO Project
         run: pio run
